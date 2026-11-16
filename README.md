@@ -4,7 +4,11 @@ Mini E-Commerce Management System
 CMS3407 - Web and Network Services Assessment 2
 This project uses Express.js for the API Gateway and the three microservices. It uses Node.js `net` for the Socket Client-Server application and JSON files as databases.
 1. Project structure
-<img width="196" height="376" alt="image" src="https://github.com/user-attachments/assets/6a6f2b4b-b9d0-4aa0-84c2-0e76c925198d" />
+   
+<img width="125" height="338" alt="image" src="https://github.com/user-attachments/assets/fba65a8b-fdc5-4dd3-a8a0-47188bfb0ed4" />
+
+
+
 
 The README and CURL test file are supplied separately. Put them in the project root if you want them visible beside the code.
 
