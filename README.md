@@ -1,192 +1,158 @@
-# Mini-Ecommerce-System
-
-Mini E-Commerce Management System
+Mini E-Commerce Management System: A Node.js-Based Client-Server Application with API Gateway, Microservices, and JSON Database 
 CMS3407 - Web and Network Services Assessment 2
-This project uses Express.js for the API Gateway and the three microservices. It uses Node.js `net` for the Socket Client-Server application and JSON files as databases.
-1. Project structure
-   
-<img width="125" height="338" alt="image" src="https://github.com/user-attachments/assets/fba65a8b-fdc5-4dd3-a8a0-47188bfb0ed4" />
 
+The project uses Express.js for the API Gateway and three microservices, Node.js for TCP socket communication, and JSON files for data storage.
 
+1. PROJECT STRUCTURE
 
+A. Socket Client-Server
+   Folder: Socket-Client-Server/
+   Files: client.js, server.js, package.json
 
-The README and CURL test file are supplied separately. Put them in the project root if you want them visible beside the code.
+B. API Gateway
+   Folder: Gateway-Microservices/api-gateway/
+   Files: server.js, package.json, routes/gatewayRoutes.js
 
-2. What each part does
-Socket Client: connects to the Socket Server and sends a message.
-Socket Server: receives the message and sends a reply.
-API Gateway: receives client HTTP requests and forwards them to the correct microservice.
-Product Service: manages products.
-Customer Service: manages customers.
-Order Service: manages orders and calculates each order's total price.
-JSON files: store the records for each service.
-`reset-data.js`: restores the original sample records after testing.
+C. Product Service
+   Folder: Gateway-Microservices/product-service/
+   Files: server.js, package.json, data/products.json
 
-3. Requirements
-Install Node.js (version 18 or later recommended).
-Install Visual Studio Code.
-Extract the code ZIP.
-Open the extracted `Mini-Ecommerce-System` folder in VS Code.
-Open Terminal > New Terminal.
-Check Node.js:
-powershell
-node --version
+D. Customer Service
+   Folder: Gateway-Microservices/customer-service/
+   Files: server.js, package.json, data/customers.json
 
-Check npm:
-powershell
-npm --version
+E. Order Service
+   Folder: Gateway-Microservices/order-service/
+   Files: server.js, package.json, data/orders.json
 
-4. Install Express
-Express is used by the API Gateway and all three microservices.
-Run `npm install` once inside each of these four folders.
-Terminal 1: Product Service
-Terminal
-cd Gateway-Microservices/product-service
-npm.cmd init -y
-npm.cmd install express
+F. Reset Script
+   File: reset-data.js (in the main project folder)
 
-Terminal 2: Customer Service
-powershell
-cd Gateway-Microservices/customer-service
-npm.cmd init -y
-npm.cmd install express
+The Gateway forwards requests to the correct service. Each service manages its own records. The socket client and server exchange TCP messages.
 
-Terminal 3: Order Service
-powershell
-cd Gateway-Microservices/order-service
-npm.cmd init -y
-npm.cmd install express
+2. REQUIREMENTS
 
-Terminal 4: API Gateway
-powershell
-cd Gateway-Microservices/api-gateway
-npm.cmd init -y
-npm.cmd install express
+- Node.js (version 18 or later recommended)
+- Visual Studio Code
+- Extract the ZIP and open Mini-Ecommerce-System in VS Code.
+- Open a terminal and check:
 
-You only need to install the packages once, unless you delete the `node_modules` folders.
-The Socket Client-Server uses Node.js's built-in `net` module, so it does not need Express or an additional package.
+  node --version
+  npm --version
 
-5. Run the Socket Client-Server
-Open two VS Code terminals.
-Terminal 1: Start the Socket Server
-powershell
-cd Socket-Client-Server
-node server.js
+3. INSTALL EXPRESS
 
-Expected message:
+Express is needed in the four HTTP application folders. From the main project folder, open a new terminal for each set of commands below.
 
-Socket server is running on port 4000
+Product Service:
+  cd Gateway-Microservices/product-service
+  npm.cmd install express
 
-Terminal 2: Start the Socket Client
-powershell
-cd Socket-Client-Server
-node client.js
+Customer Service:
+  cd Gateway-Microservices/customer-service
+  npm.cmd install express
+
+Order Service:
+  cd Gateway-Microservices/order-service
+  npm.cmd install express
+
+API Gateway:
+  cd Gateway-Microservices/api-gateway
+  npm.cmd install express
+
+Install the packages once. The TCP socket application uses Node.js's built-in net module and does not need Express.
+
+4. START THE HTTP APPLICATION
+
+Open four separate VS Code terminals, each starting in the main project folder. Run these commands and keep all four terminals open.
+
+Terminal 1 - Product Service (port 3001):
+  cd Gateway-Microservices/product-service
+  node server.js
+
+Terminal 2 - Customer Service (port 3002):
+  cd Gateway-Microservices/customer-service
+  node server.js
+
+Terminal 3 - Order Service (port 3003):
+  cd Gateway-Microservices/order-service
+  node server.js
+
+Terminal 4 - API Gateway (port 3000):
+  cd Gateway-Microservices/api-gateway
+  node server.js
+
+Start the three microservices before the Gateway.
+
+5. CHECK THE API GATEWAY
+
+Open these addresses in a web browser:
+
+  http://127.0.0.1:3000/health
+  http://127.0.0.1:3000/api/products
+  http://127.0.0.1:3000/api/customers
+  http://127.0.0.1:3000/api/orders
+
+The health route should return "API Gateway is running". Use port 3000 for normal client requests. The Gateway passes requests to the backend services using an internal token. Direct backend access returns HTTP 403.
+
+6. RUN THE TCP SOCKET CLIENT-SERVER
+
+Open two more terminals, both starting in the main project folder.
+
+Socket Terminal 1 - Server:
+  cd Socket-Client-Server
+  node server.js
+
+Expected message: Socket server is running on port 4000
+
+Socket Terminal 2 - Client:
+  cd Socket-Client-Server
+  node client.js
 
 The client sends a message and displays the server's reply.
 
-6. Run the three microservices and API Gateway
-Open four new VS Code terminals. Keep all four terminals running.
-Terminal 1: Product Service
-powershell
-cd Gateway-Microservices/product-service
-node server.js
+7. TEST THE HTTP METHODS
 
-Terminal 2: Customer Service
-powershell
-cd Gateway-Microservices/customer-service
-node server.js
+Keep the HTTP services running. Open a new Windows PowerShell terminal.
+Run these example requests in order:
 
-Terminal 3: Order Service
-powershell
-cd Gateway-Microservices/order-service
-node server.js
+GET all products:
+  curl.exe -i http://127.0.0.1:3000/api/products
 
-Terminal 4: API Gateway
-powershell
-cd Gateway-Microservices/api-gateway
-node server.js
+GET one product:
+  curl.exe -i http://127.0.0.1:3000/api/products/1001
 
-The Gateway should display:
+POST a product:
+  curl.exe --% -i -X POST http://localhost:3000/api/products -H "Content-Type: application/json" -d "{\"name\":\"USB-C Cable\",\"category\":\"Accessories\",\"price\":8.99,\"stock\":100}"
 
-API Gateway is running at http://127.0.0.1:3000
-All client requests must use the Gateway.
+PUT the new product (ID 1004):
+  curl.exe --% -i -X PUT http://localhost:3000/api/products/1004 -H "Content-Type: application/json" -d "{\"name\":\"USB-C Cable Pro\",\"category\":\"Accessories\",\"price\":12.99,\"stock\":80}"
 
-Start the three microservices before starting the Gateway.
+DELETE the new product:
+  curl.exe -i -X DELETE http://127.0.0.1:3000/api/products/1004
 
-7. Check the API Gateway
-Open this address in a browser:
+The POST must succeed before running the PUT and DELETE examples.
+The separate CURL testing file contains 69 HTTP tests and 5 socket tests.
+Follow its stated test order. The --% syntax is for Windows PowerShell.
 
-http://127.0.0.1:3000/health
+8. RESET DATA AND STOP THE SERVERS
 
-The three client-facing routes are:
+To restore the original JSON data, stop the HTTP services with Ctrl+C.
+From the main project folder, run:
 
-http://127.0.0.1:3000/api/products
-http://127.0.0.1:3000/api/customers
-http://127.0.0.1:3000/api/orders
+  node reset-data.js
 
-Clients should use port 3000. The backend service ports are 3001, 3002 and 3003.
+Restart the services if you need to test again. To finish, press Ctrl+C
+in each running server terminal.
 
-8. Test the HTTP methods
-Open a fifth VS Code terminal using Windows PowerShell. Use `curl.exe` for HTTP requests. For JSON POST or PUT commands, use the working Windows PowerShell form `curl.exe --%` followed by JSON with escaped quotation marks (`\\"`). The `--%` stop-parsing operator is for Windows PowerShell, not Command Prompt.
-GET: View all products
-powershell
-curl.exe -i http://127.0.0.1:3000/api/products
+9. COMMON PROBLEMS
 
-GET: View one product
-powershell
-curl.exe -i http://127.0.0.1:3000/api/products/1001
+- 'node' not recognised: Install Node.js and restart VS Code.
+- Cannot find 'express': Run npm.cmd install express in that service folder.
+- Port already in use: Stop the other running server with Ctrl+C.
+- HTTP 502: Check whether the required backend service is running.
+- HTTP 404: Check the requested URL.
+- HTTP 403 on a backend port: Use the Gateway on port 3000 instead.
 
-POST: Add a product
-powershell
-curl.exe --% -i -X POST http://localhost:3000/api/products -H "Content-Type: application/json" -d "{\"name\":\"USB-C Cable\",\"category\":\"Accessories\",\"price\":8.99,\"stock\":100}"
-
-PUT: Update a product
-powershell
-curl.exe --% -i -X PUT http://localhost:3000/api/products/1004 -H "Content-Type: application/json" -d "{\"name\":\"USB-C Cable Pro\",\"category\":\"Accessories\",\"price\":12.99,\"stock\":80}"
-
-DELETE: Delete a product
-powershell
-curl.exe -i -X DELETE http://127.0.0.1:3000/api/products/1004
-
-The same four HTTP methods are available for customers and orders. The separate testing document contains 69 HTTP cURL tests and 5 Socket Client-Server tests. Follow their required order; the example PUT and DELETE above assume the POST created product ID 1004. Actual test results must be recorded only after execution.
-
-9. How the API Gateway works
-The client sends a request to port 3000.
-Express receives the request.
-The Gateway loads the Express Router from `routes/index.js`, which exports `routes/gatewayRoutes.js`.
-The Gateway selects the correct microservice.
-The Express Router forwards the request to the backend service.
-The Gateway adds an internal token to the request.
-The microservice checks the token. A direct request without the token receives HTTP 403.
-The microservice reads or updates its JSON file.
-The response travels back through the Gateway to the client.
-The token is a simple coursework demonstration, not production-grade authentication.
-
-10. Reset the JSON data
-POST, PUT and DELETE change the JSON files. To restore the original records:
-Stop the running services by pressing Ctrl+C in their terminals.
-Open a terminal at the main project folder.
-Run:
-powershell
-node reset-data.js
-
-The original products, customers and orders will be restored. Start the services again before testing.
-
-11. Stop the servers
-Click each server terminal and press Ctrl+C.
-
-12. Common problems
-`node` is not recognised: Install Node.js, restart VS Code and check `node --version`.
-`Cannot find module 'express'`: Run `npm install` inside the relevant service folder.
-Port is already in use: Find the terminal running the other server and press Ctrl+C.
-Gateway returns 502: Check that the selected microservice is running.
-Gateway returns 404: Check the URL spelling.
-Direct service access returns 403: This is expected. Use the Gateway on port 3000.
-
-13. Important notes
-Install Express separately in the four HTTP application folders.
-Start the three microservices before starting the Gateway.
-Keep all four server terminals open while testing.
-Use port 3000 for normal client requests.
-Take screenshots of the actual VS Code terminal output for your portfolio.
-The CURL test file is supplied separately.
+Keep the CURL test file with the project files and capture actual terminal
+outputs when recording test evidence.
