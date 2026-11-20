@@ -1,0 +1,1621 @@
+MINI E-COMMERCE MANAGEMENT SYSTEM
+69 HTTP cURL Tests and 5 TCP Socket Tests
+
+Test 01: Gateway Health Check
+
+Purpose: Check that the API Gateway is running.
+
+Expected result: HTTP 200. JSON message is exactly "API Gateway is running".
+
+Command: curl.exe -i http://127.0.0.1:3000/health
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 36
+ETag: W/"24-UEViLa3k35gSmsZrTpWUCYYvCIE"
+Date: Fri, 13 Nov 2026 09:38:33 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"message": "API Gateway is running"}
+
+Result: Pass
+
+Test 02: Unknown Gateway Route
+
+Purpose: Request a route that does not exist.
+
+Expected result: HTTP 404. JSON error says "Gateway route not found"; no product,
+customer or order data returned.
+
+Command: curl.exe -i http://127.0.0.1:3000/api/unknown
+
+Output message:
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 35
+ETag: W/"23-IuRJyAthxzPtkEqzI2KL4iud7H8"
+Date: Fri, 13 Nov 2026 09:40:33 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error": "Gateway route not found"}
+
+Result: Pass
+
+Test 03: Misspelled Product Route
+
+Purpose: Check the Gateway response to a misspelled route.
+
+Expected result: HTTP 404. JSON error says "Gateway route not found".
+
+Command: curl.exe -i http://127.0.0.1:3000/api/produts
+
+Output message:
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 35
+ETag: W/"23-IuRJyAthxzPtkEqzI2KL4iud7H8"
+Date: Fri, 13 Nov 2026 09:43:21 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error": "Gateway route not found"}
+
+Result: Pass
+
+Test 04: Direct Product Service Access
+
+Purpose: Try to access Product Service without the Gateway token.
+
+Expected result: HTTP 403. JSON error says "Please access this service through the
+API Gateway".
+
+Command: curl.exe -i http://127.0.0.1:3001/products
+
+Output message:
+HTTP/1.1 403 Forbidden
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 62
+ETag: [partially legible in source screenshot]
+Date: Fri, 13 Nov 2026 09:44:35 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error":"Please access this service through the API Gateway"}
+
+Result: Pass
+
+Test 05: Direct Customer Service Access
+
+Purpose: Try to access Customer Service without the Gateway token.
+
+Expected result: HTTP 403. JSON error says "Please access this service through the
+API Gateway".
+
+Command: curl.exe -i http://127.0.0.1:3002/customers
+
+Output message:
+HTTP/1.1 403 Forbidden
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 62
+ETag: [partially legible in source screenshot]
+Date: Fri, 13 Nov 2026 09:48:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error":"Please access this service through the API Gateway"}
+
+Result: Pass
+
+Test 06: Direct Order Service Access
+
+Purpose: Try to access Order Service without the Gateway token.
+
+Expected result: HTTP 403. JSON error says "Please access this service through the
+API Gateway".
+
+Command: curl.exe -i http://127.0.0.1:3003/orders
+
+Output message:
+HTTP/1.1 403 Forbidden
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 62
+ETag: [partially legible in source screenshot]
+Date: Fri, 13 Nov 2026 09:50:29 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error":"Please access this service through the API Gateway"}
+
+Result: Pass
+
+B. Product CRUD and validation
+
+Test 07: Get All Products
+
+Purpose: Read all products from products.json through the Gateway.
+
+Expected result: HTTP 200. JSON data is an array of 3 seed products: IDs 1001,
+1002, 1003.
+
+Command: curl.exe -i http://127.0.0.1:3000/api/products
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 09:51:32 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"data":[{"id":1001,"name":"Wireless Mouse", "category":"Electronics", "price":15.99, "stock":50},{"id":1002, "name":"Mechanical Keyboard", "category": "Electronics", "price":49.99,"stock":20},{"id":1003, "name": "USB-C Hub", "category": "Accessories", "price":29.5, "stock": 35}]}
+
+Result: Pass
+
+Test 08: Get One Product
+
+Purpose: Read product ID 1001.
+
+Expected result: HTTP 200. JSON data.id=1001; name="Wireless Mouse";
+price=15.99; stock=50.
+
+Command: curl.exe -i http://127.0.0.1:3000/api/products/1001
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"data":{"id":1001,"name":"Wireless Mouse", "category": "Electronics", "price":15.99, "stock": 50}}
+
+Result: Pass
+
+Test 09: Post A New Product
+
+Purpose: Add a new product. Run this before Tests 10-13.
+
+Expected result: HTTP 201. JSON message="Product added"; data.id=1004;
+name="USB-C Cable"; price=8.99; stock=100. Note: Requires reset seed data; do not
+run the Product creation sequence twice without resetting.
+
+Command: curl.exe --% -i -X POST http://localhost:3000/api/products -H "Content-Type: application/json" -d "{\"name\":\"USB-C Cable\",\"category\":\"Accessories\",\"price\":8.99,\"stock\":100}"
+
+Output message:
+HTTP/1.1 201 Created
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 14:45:31 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"message": "Product added", "data":{"id":1004, "name": "USB-C Cable", "category": "Accessories", "price":8.99,"stock":100}}
+
+Result: Pass
+
+Test 10: Get The New Product
+
+Purpose: Read the product created in Test 9.
+
+Expected result: HTTP 200. JSON data.id=1004 and name="USB-C Cable". Note:
+Run Test 09 first; ID 1004 is created there.
+
+Command: curl.exe -i http://127.0.0.1:3000/api/products/1004
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 15:34:19 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"data":{"id":1004,"name":"USB-C Cable", "category": "Accessories", "price":8.99,"stock":100}}
+
+Result: Pass
+
+Test 11: Put Update The New Product
+
+Purpose: Update product ID 1004.
+
+Expected result: HTTP 200. JSON message="Product updated"; id=1004;
+name="USB-C Cable Pro"; price=12.99; stock=80. Note: Run Tests 09–10 first.
+
+Command: curl.exe --% -i -X PUT http://127.0.0.1:3000/api/products/1004 -H "Content-Type: application/json" -d "{\"name\":\"USB-C Cable Pro\",\"category\":\"Accessories\",\"price\":12.99,\"stock\":80}"
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 15:40:01 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"message": "Product updated", "data": {"id":1004, "name": "USB-C Cable Pro", "category": "Accessories", "price":12.99,"stock": 80}}
+
+Result: Pass
+
+Test 12: Get To Verify Product Update
+
+Purpose: Check the updated product name and price.
+
+Expected result: HTTP 200. JSON data.id=1004; name="USB-C Cable Pro";
+price=12.99; stock=80. Note: Run Test 11 first.
+
+Command: curl.exe -i http://127.0.0.1:3000/api/products/1004
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 15:40:53 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"data":{"id":1004,"name":"USB-C Cable Pro", "category":"Accessories", "price":12.99, "stock": 80}}
+
+Result: Pass
+
+Test 13: Delete The New Product
+
+Purpose: Delete product ID 1004.
+
+Expected result: HTTP 200. JSON message="Product deleted"; deleted data.id=1004.
+Note: Run Tests 09–12 first.
+
+Command: curl.exe -i -X DELETE http://127.0.0.1:3000/api/products/1004
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 15:41:33 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"message": "Product deleted", "data": {"id":1004, "name": "USB-C Cable Pro", "category": "Accessories", "price":12.99,"stock": 80}}
+
+Result: Pass
+
+Test 14: Get Deleted Product
+
+Purpose: Confirm that product ID 1004 no longer exists.
+
+Expected result: HTTP 404. JSON error="Product not found". Note: Run Test 13 first.
+
+Command: curl.exe -i http://127.0.0.1:3000/api/products/1004
+
+Output message:
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 15:42:08 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Product not found"}
+
+Result: Pass
+
+Test 15: Post Product With Missing Fields
+
+Purpose: Send a product without required fields.
+
+Expected result: HTTP 400. JSON error="Product name and category are required"
+OR equivalent required-field error returned by current code.
+
+Command: curl.exe --% -i -X POST http://127.0.0.1:3000/api/products -H "Content-Type: application/json" -d "{\"name\":\"Incomplete\"}"
+
+Output message:
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:02:12 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error": "Product name and category are required"}
+
+Result: Pass
+
+Test 16: Post Product With Malformed Json
+
+Purpose: Send invalid JSON to Product Service.
+
+Expected result: HTTP 400. JSON error="Invalid JSON or request body" from the API
+Gateway.
+
+Command: curl.exe --% -i -X POST http://127.0.0.1:3000/api/products -H "Content-Type: application/json" -d "{bad json}"
+
+Output message:
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 81
+ETag: W/"51-sPmBV+ATZCIn2FCDEFoiUNENd+s"
+Date: Fri, 13 Nov 2026 15:45:27 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error": "Expected property name or '}' in JSON at position 1 (line 1 column 2)"}
+
+Result: Pass
+
+Test 17: Get Product With Invalid Id
+
+Purpose: Use letters instead of a numeric product ID.
+
+Expected result: HTTP 400. JSON error="Product ID must be a number".
+
+Command: curl.exe -i http://127.0.0.1:3000/api/products/abc
+
+Output message:
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 15:46:07 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Product ID must be a number"}
+
+Result: Pass
+
+Test 18: Unsupported Method On Product Service
+
+Purpose: Try PATCH, which is not supported.
+
+Expected result: HTTP 405. JSON error="Method not allowed".
+
+Command: curl.exe -i -X PATCH http://127.0.0.1:3000/api/products/1001
+
+Output message:
+HTTP/1.1 405 Method Not Allowed
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 15:47:08 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Method not allowed"}
+
+Result: Pass
+
+C. Customer CRUD and validation
+
+Test 19: Get All Customers
+
+Purpose: Read all customers from customers.json.
+
+Expected result: HTTP 200. JSON data is an array of 2 seed customers: IDs 2001 and
+2002.
+
+Command: curl.exe -i http://127.0.0.1:3000/api/customers
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 15:48:03 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"data": [{"id":2001,"fullName": "Alice Johnson","email":"alice@example.com", "phone": "97123456789", "address": "London"},{"id": 2002, "fullName": "David Brown", "email": "david@example.com", "phone": "07987654321", "address": "Manchester"}]}
+
+Result: Pass
+
+Test 20: Get One Customer
+
+Purpose: Read customer ID 2001.
+
+Expected result: HTTP 200. JSON data.id=2001; fullName="Alice Johnson";
+email="alice@example.com".
+
+Command: curl.exe -i http://127.0.0.1:3000/api/customers/2001
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 15:48:38 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"data":{"id":2001,"fullName": "Alice Johnson", "email": "alice@example.com", "phone": "07123456789", "address": "London"}}
+
+Result: Pass
+
+Test 21: Post A New Customer
+
+Purpose: Add a customer. Run before Tests 22-25.
+
+Expected result: HTTP 201. JSON message="Customer added"; data.id=2003;
+fullName="Sarah Taylor". Note: Requires reset seed data.
+
+Command: curl.exe --% -i -X POST http://127.0.0.1:3000/api/customers -H "Content-Type: application/json" -d "{\"fullName\":\"Sarah Taylor\",\"email\":\"sarah@example.com\",\"phone\":\"07111222333\",\"address\":\"Birmingham\"}"
+
+Output message:
+HTTP/1.1 201 Created
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 19:07:12 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"message": "Customer added", "data": {"id":2003,"fullName":"Sarah Taylor", "email": "sarah@example.com", "phone": "07111222333", "address": "Birmingham" }}
+
+Result: Pass
+
+Test 22: Get The New Customer
+
+Purpose: Read the customer created in Test 21.
+
+Expected result: HTTP 200. JSON data.id=2003; fullName="Sarah Taylor". Note: Run
+Test 21 first.
+
+Command: curl.exe -i http://127.0.0.1:3000/api/customers/2003
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 15:55:15 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"data":{"id":2003,"fullName": "Sarah Taylor", "email": "sarah@example.com", "phone": "07111222333", "address": "Birmingham" }}
+
+Result: Pass
+
+Test 23: Put Update The New Customer
+
+Purpose: Update customer ID 2003.
+
+Expected result: HTTP 200. JSON message="Customer updated"; id=2003;
+address="Bristol". Note: Run Tests 21–22 first.
+
+Command: curl.exe --% -i -X PUT http://127.0.0.1:3000/api/customers/2003 -H "Content-Type: application/json" -d "{\"fullName\":\"Sarah Taylor Updated\",\"email\":\"sarah.updated@example.com\",\"phone\":\"07111222333\",\"address\":\"Bristol\"}"
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 15:58:13 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"message": "Customer updated", "data": {"id": 2003, "fullName":"Sarah Taylor Updated", "email": "sarah.updated@example.com", "phone": "07111222333", "address": "Bristol"}}
+
+Result: Pass
+
+Test 24: Get To Verify Customer Update
+
+Purpose: Check the updated customer details.
+
+Expected result: HTTP 200. JSON data.id=2003; fullName="Sarah Taylor Updated";
+email="sarah.updated@example.com". Note: Run Test 23 first.
+
+Command: curl.exe -i http://127.0.0.1:3000/api/customers/2003
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 15:58:49 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"data":{"id":2003,"fullName": "Sarah Taylor Updated", "email":"sarah.updated@example.com", "phone": "07111222333", "address": "Bristol"}} -
+
+Result: Pass
+
+Test 25: Delete The New Customer
+
+Purpose: Delete customer ID 2003.
+
+Expected result: HTTP 200. JSON message="Customer deleted"; deleted
+data.id=2003. Note: Run Tests 21–24 first.
+
+Command: curl.exe -i -X DELETE http://127.0.0.1:3000/api/customers/2003
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 15:59:43 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"message": "Customer deleted", "data": {"id": 2003, "fullName":"Sarah Taylor Updated", "email": "sarah.updated@example.com", "phone": "07111222333", "address": "Bristol"}}
+
+Result: Pass
+
+Test 26: Get Deleted Customer
+
+Purpose: Confirm that customer ID 2003 no longer exists.
+
+Expected result: HTTP 404. JSON error="Customer not found". Note: Run Test 25
+first.
+
+Command: curl.exe -i http://127.0.0.1:3000/api/customers/2003
+
+Output message:
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:00:14 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Customer not found"}
+
+Result: Pass
+
+Test 27: Post Customer With Invalid Email
+
+Purpose: Check email validation.
+
+Expected result: HTTP 400. JSON error="Please enter a valid email address".
+
+Command: curl.exe --% -i -X POST http://127.0.0.1:3000/api/customers -H "Content-Type: application/json" -d "{\"fullName\":\"Invalid Email\",\"email\":\"not-an-email\",\"phone\":\"07123456789\",\"address\":\"London\"}"
+
+Output message:
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:04:07 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Please enter a valid email address"}
+
+Result: Pass
+
+Test 28: Post Customer With Missing Fields
+
+Purpose: Check required customer fields.
+
+Expected result: HTTP 400. JSON error="Name, email, phone and address are
+required".
+
+Command: curl.exe --% -i -X POST http://127.0.0.1:3000/api/customers -H "Content-Type: application/json" -d "{\"fullName\":\"Incomplete\"}"
+
+Output message:
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:05:31 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Name, email, phone and address are required"}
+
+Result: Pass
+
+Test 29: Get Customer With Invalid Id
+
+Purpose: Use letters instead of a numeric customer ID.
+
+Expected result: HTTP 400. JSON error="Customer ID must be a number".
+
+Command: curl.exe -i http://127.0.0.1:3000/api/customers/abc
+
+Output message:
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:06:05 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error": "Customer ID must be a number"}
+
+Result: Pass
+
+Test 30: Unsupported Method On Customer Service
+
+Purpose: Try PATCH, which is not supported.
+
+Expected result: HTTP 405. JSON error="Method not allowed".
+
+Command: curl.exe -i -X PATCH http://127.0.0.1:3000/api/customers/2001
+
+Output message:
+HTTP/1.1 405 Method Not Allowed
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:06:39 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error": "Method not allowed"} -
+
+Result: Pass
+
+D. Order CRUD and validation
+
+Test 31: Get All Orders
+
+Purpose: Read all orders from orders.json.
+
+Expected result: HTTP 200. JSON data is an array of 2 seed orders: IDs 3001 and
+3002.
+
+Command: curl.exe -i http://127.0.0.1:3000/api/orders
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:07:23 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"data": [{"id": 3001, "customerId": 2001, "productId":1001,"quantity":2,"unitPrice":15.99,"totalPrice":31.98,"status":"Pending"},{"id": 3002, "customerId": 2002, "productId": 1002,"quantity":1, "unitPrice":49.99, "totalPrice":49.99, "status":"Processing"}]}
+
+Result: Pass
+
+Test 32: Get One Order
+
+Purpose: Read order ID 3001.
+
+Expected result: HTTP 200. JSON data.id=3001; customerId=2001; productId=1001;
+totalPrice=31.98.
+
+Command: curl.exe -i http://127.0.0.1:3000/api/orders/3001
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:07:56 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"data":{"id": 3001, "customerId": 2001, "productId": 1001, "quantity":2,"unitPrice":15.99, "totalPrice":31.98,"status":"Pending" }} -
+
+Result: Pass
+
+Test 33: Post A New Order
+
+Purpose: Create an order. The Order Service calculates totalPrice. Run before Tests
+34-37.
+
+Expected result: HTTP 201. JSON message="Order added"; data.id=3003; quantity=2;
+totalPrice=31.98; status="Pending". Note: Requires reset seed data.
+
+Command: curl.exe --% -i -X POST http://127.0.0.1:3000/api/orders -H "Content-Type: application/json" -d "{\"customerId\":2001,\"productId\":1001,\"quantity\":2,\"unitPrice\":15.99}"
+
+Output message:
+HTTP/1.1 201 Created
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:10:25 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"message": "Order added", "data":{"id": 3003, "customerId":2001, "productId": 1001, "quantity":2,"unitPrice":15.99,"totalPrice":31.98, "status": "Pending"}}
+
+Result: Pass
+
+Test 34: Get The New Order
+
+Purpose: Read the order created in Test 33.
+
+Expected result: HTTP 200. JSON data.id=3003; quantity=2; totalPrice=31.98. Note:
+Run Test 33 first.
+
+Command: curl.exe -i http://127.0.0.1:3000/api/orders/3003
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:12:30 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"data":{"id": 3003, "customerId": 2001, "productId":1001, "quantity":2,"unitPrice":15.99, "totalPrice":31.98,"status":"Pending"}}
+
+Result: Pass
+
+Test 35: Put Update The New Order
+
+Purpose: Update order ID 3003.
+
+Expected result: HTTP 200. JSON message="Order updated"; data.id=3003;
+quantity=3; totalPrice=47.97; status="Processing". Note: Run Tests 33–34 first.
+
+Command: curl.exe --% -i -X PUT http://127.0.0.1:3000/api/orders/3003 -H "Content-Type: application/json" -d "{\"customerId\":2001,\"productId\":1001,\"quantity\":3,\"unitPrice\":15.99,\"status\":\"Processing\"}"
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:13:25 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"message": "Order updated", "data": {"id": 3003, "customerId":2001, "productId":1001, "quantity":3,"unitPrice":15.99,"totalPrice":47.97, "status": "Processing"}} -
+
+Result: Pass
+
+Test 36: Get To Verify Order Update
+
+Purpose: Check the updated quantity, status and totalPrice.
+
+Expected result: HTTP 200. JSON data.id=3003; quantity=3; totalPrice=47.97;
+status="Processing". Note: Run Test 35 first.
+
+Command: curl.exe -i http://127.0.0.1:3000/api/orders/3003
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:14:04 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"data":{"id": 3003, "customerId": 2001, "productId":1001, "quantity":3,"unitPrice":15.99,"totalPrice":47.97,"status":"Processing"}}
+
+Result: Pass
+
+Test 37: Delete The New Order
+
+Purpose: Delete order ID 3003.
+
+Expected result: HTTP 200. JSON message="Order deleted"; deleted data.id=3003.
+Note: Run Tests 33–36 first.
+
+Command: curl.exe -i -X DELETE http://127.0.0.1:3000/api/orders/3003
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:14:36 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"message": "Order deleted", "data": {"id": 3003, "customerId":2001, "productId":1001, "quantity":3,"unitPrice":15.99,"totalPrice":47.97, "status": "Processing"}}
+
+Result: Pass
+
+Test 38: Get Deleted Order
+
+Purpose: Confirm that order ID 3003 no longer exists.
+
+Expected result: HTTP 404. JSON error="Order not found". Note: Run Test 37 first.
+
+Command: curl.exe -i http://127.0.0.1:3000/api/orders/3003
+
+Output message:
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:15:16 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Order not found"}
+
+Result: Pass
+
+Test 39: Post Order With Zero Quantity
+
+Purpose: Check that quantity must be a positive whole number.
+
+Expected result: HTTP 400. JSON error="Quantity must be at least 1".
+
+Command: curl.exe --% -i -X POST http://127.0.0.1:3000/api/orders -H "Content-Type: application/json" -d "{\"customerId\":2001,\"productId\":1001,\"quantity\":0,\"unitPrice\":15.99}"
+
+Output message:
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:16:59 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Quantity must be at least 1"}
+
+Result: Pass
+
+Test 40: Post Order With Negative Price
+
+Purpose: Check that unitPrice must be greater than zero.
+
+Expected result: HTTP 400. JSON error="Unit price must be greater than zero".
+
+Command: curl.exe --% -i -X POST http://127.0.0.1:3000/api/orders -H "Content-Type: application/json" -d "{\"customerId\":2001,\"productId\":1001,\"quantity\":1,\"unitPrice\":-5}"
+
+Output message:
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:18:18 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Unit price must be greater than zero"}
+
+Result: Pass
+
+Test 41: Get Order With Invalid Id
+
+Purpose: Use letters instead of a numeric order ID.
+
+Expected result: HTTP 400. JSON error="Order ID must be a number".
+
+Command: curl.exe -i http://127.0.0.1:3000/api/orders/abc
+
+Output message:
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:18:47 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Order ID must be a number"}
+
+Result: Pass
+
+Test 42: Unsupported Method On Order Service
+
+Purpose: Try PATCH, which is not supported.
+
+Expected result: HTTP 405. JSON error="Method not allowed".
+
+Command: curl.exe -i -X PATCH http://127.0.0.1:3000/api/orders/3001
+
+Output message:
+HTTP/1.1 405 Method Not Allowed
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:20:05 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Method not allowed"}
+
+Result: Pass
+
+E. Backend service unavailability
+
+Test 43: Product Service Unavailable
+
+Purpose: Stop Product Service with Ctrl+C, keep the Gateway running, then run this
+command.
+
+Expected result: HTTP 502. JSON error="Product Management Service is not
+available"; only Product Service is stopped. Note: Stop Product Service immediately
+before running; restart it after capturing the result.
+
+Command: curl.exe -i http://127.0.0.1:3000/api/products
+
+Output message:
+HTTP/1.1 502 Bad Gateway
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 55
+ETag: W/"37-Chn5cR5igmrYA5VSXJuwax8Rfwo"
+Date: Fri, 13 Nov 2026 16:21:10 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error": "Product Management Service is not available"}
+
+Result: Pass
+
+Test 44: Customer Service Unavailable
+
+Purpose: Stop Customer Service with Ctrl+C, keep the Gateway running, then run this
+command.
+
+Expected result: HTTP 502. JSON error="Customer Management Service is not
+available"; only Customer Service is stopped. Note: Stop Customer Service immediately
+before running; restart it after capturing the result.
+
+Command: curl.exe -i http://127.0.0.1:3000/api/customers
+
+Output message:
+HTTP/1.1 502 Bad Gateway
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 56
+ETag: W/"38-3EkLUFp1WzE8YUhMz4DftZIXj/c"
+Date: Fri, 13 Nov 2026 16:21:58 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error":"Customer Management Service is not available"}
+
+Result: Pass
+
+Test 45: Order Service Unavailable
+
+Purpose: Stop Order Service with Ctrl+C, keep the Gateway running, then run this
+command.
+
+Expected result: HTTP 502. JSON error="Order Management Service is not available";
+only Order Service is stopped. Note: Stop Order Service immediately before running;
+restart it after capturing the result.
+
+Command: curl.exe -i http://127.0.0.1:3000/api/orders
+
+Output message:
+HTTP/1.1 502 Bad Gateway
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 53
+ETag: W/"35-g6CWCbjJ0m97scg1BPLSxMb8BcM"
+Date: Fri, 13 Nov 2026 16:22:27 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error":"Order Management Service is not available"}
+
+Result: Pass
+
+F. Additional navigation, input and data checks
+
+Test 46: Get Unknown Product Id
+
+Purpose: Check not-found response for a numeric ID absent from products.json.
+Expected result: HTTP 404. JSON error="Product not found". Note:
+
+Complete Tests 01-45, restart all services, reset JSON seed data, and restart services
+before beginning Test 46.
+
+Command: curl.exe -i http://127.0.0.1:3000/api/products/9999
+
+Output message:
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:25:32 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Product not found"} -
+
+Result: Pass
+
+Test 47: Put Unknown Product Id
+
+Purpose: Verify updating a product that does not exist is rejected.
+
+Expected result: HTTP 404. JSON error="Product not found"; no new product added.
+Command: curl.exe --% -i -X PUT http://127.0.0.1:3000/api/products/9999 -H "Content-Type: application/json" -d "{\"name\":\"Replacement Item\",\"category\":\"Accessories\",\"price\":9.99,\"stock\":6}"
+
+Output message:
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:26:41 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Product not found"} -
+
+Result: Pass
+
+Test 48: Delete Unknown Product Id
+
+Purpose: Verify deleting an absent product is handled.
+
+Expected result: HTTP 404. JSON error="Product not found".
+
+Command: curl.exe -i -X DELETE http://127.0.0.1:3000/api/products/9999
+
+Output message:
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:27:10 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Product not found"}
+
+Result: Pass
+
+Test 49: Post Product With Negative Price
+
+Purpose: Check product price validation.
+
+Expected result: HTTP 400. JSON error="Price must be greater than zero". Command:
+curl.exe  --%    -i  -X POST  http://127.0.0.1:3000/api/products  -H  "Content-Type:
+application/json"   -d   "{\"name\":\"Bad   Price\",\"category\":\"Accessories\",\"price\":-
+2,\"stock\":5}"
+
+Output message:
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:27:59 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error": "Price must be greater than zero"}
+
+Result: Pass
+
+Test 50: Post Product With Negative Stock
+
+Purpose: Check that a negative inventory count cannot be stored.
+
+Expected result: HTTP 400. JSON error="Stock must be zero or a positive whole
+number".
+
+Command: curl.exe --% -i -X POST http://127.0.0.1:3000/api/products -H "Content-Type: application/json" -d "{\"name\":\"Bad Stock\",\"category\":\"Accessories\",\"price\":5,\"stock\":-1}"
+
+Output message:
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 18:39:06 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error": "Stock must be zero or a positive whole number"}
+
+Result: Pass
+
+Test 51: Post Product With Decimal Stock
+
+Purpose: Check stock is a whole number rather than a fraction.
+
+Expected result: HTTP 400. JSON error="Stock must be zero or a positive whole
+number".
+
+Command: curl.exe --% -i -X POST http://127.0.0.1:3000/api/products -H "Content-Type: application/json" -d "{\"name\":\"Decimal Stock\",\"category\":\"Accessories\",\"price\":5,\"stock\":1.5}"
+
+Output message:
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:29:47 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error": "Stock must be zero or a positive whole number"}
+
+Result: Pass
+
+Test 52: Post Product Using A Json Array
+
+Purpose: Check that a record must be a JSON object.
+
+Expected result: HTTP 400. JSON error="Product information must be a JSON
+object".
+
+Command: curl.exe --% -i -X POST http://127.0.0.1:3000/api/products -H "Content-Type: application/json" -d "[{\"name\":\"Array Item\",\"category\":\"Accessories\",\"price\":2,\"stock\":3}]"
+
+Output message:
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:30:26 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Product information must be a JSON object"}
+
+Result: Pass
+
+Test 53: Post To Product Detail Url
+
+Purpose: Check unsupported HTTP method on an individual product resource.
+
+Expected result: HTTP 405. JSON error="Method not allowed".
+
+Command: curl.exe --% -i -X POST http://127.0.0.1:3000/api/products/1001 -H "Content-Type: application/json" -d "{\"name\":\"Replacement Item\",\"category\":\"Accessories\",\"price\":9.99,\"stock\":6}"
+
+Output message:
+HTTP/1.1 405 Method Not Allowed
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:31:16 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Method not allowed"} -
+
+Result: Pass
+
+Test 54: Verify Products Unaffected By Errors
+
+Purpose: Verify unsuccessful requests did not change products.json.
+
+Expected result: HTTP 200. The array still contains exactly 3 seed products: 1001,
+1002, 1003.
+
+Command: curl.exe -i http://127.0.0.1:3000/api/products
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:31:43 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"data":[{"id":1001,"name":"Wireless Mouse", "category": "Electronics", "price":15.99, "stock":50},{"id":1002,"name":"Mechanical Keyboard", "category": "Electronics", "price":49.99, "stock": 20},{"id":1003, "name": "USB-C Hub", "category":"Accessories", "price":29.5, "stock": 35}]}
+
+Result: Pass
+
+Test 55: Get Unknown Customer Id
+
+Purpose: Check absent numeric customer ID.
+
+Expected result: HTTP 404. JSON error="Customer not found".
+
+Command: curl.exe -i http://127.0.0.1:3000/api/customers/9999
+
+Output message:
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:42:39 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Customer not found"}
+
+Result: Pass
+
+Test 56: Put Unknown Customer Id
+
+Purpose: Check update of an absent customer is not silently treated as create.
+
+Expected result: HTTP 404. JSON error="Customer not found".
+
+Command: curl.exe --% -i -X PUT http://127.0.0.1:3000/api/customers/9999 -H "Content-Type: application/json" -d "{\"fullName\":\"Test Customer\",\"email\":\"test@example.com\",\"phone\":\"07111111111\",\"address\":\"Leeds\"}"
+
+Output message:
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:43:25 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Customer not found"}
+
+Result: Pass
+
+Test 57: Delete Unknown Customer Id
+
+Purpose: Check deletion of absent customer ID.
+
+Expected result: HTTP 404. JSON error="Customer not found".
+
+Command: curl.exe -i -X DELETE http://127.0.0.1:3000/api/customers/9999
+
+Output message:
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:43:51 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Customer not found"}
+
+Result: Pass
+
+Test 58: Put Invalid Customer Fields
+
+Purpose: Check invalid customer update does not overwrite valid customer data.
+
+Expected result: HTTP 400. JSON error="Name, email, phone and address are
+required".
+
+Command: curl.exe --% -i -X PUT http://127.0.0.1:3000/api/customers/2001 -H "Content-Type: application/json" -d "{\"fullName\":\"Only Name\"}"
+
+Output message:
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:44:27 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Name, email, phone and address are required"}
+
+Result: Pass
+
+Test 59: Verify Customer Unchanged After Rejection
+
+Purpose: Confirm customer 2001 retains original content.
+
+Expected result: HTTP 200. JSON data.id=2001; fullName="Alice Johnson";
+email="alice@example.com"; address="London".
+
+Command: curl.exe -i http://127.0.0.1:3000/api/customers/2001
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:44:59 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"data":{"id":2001,"fullName": "Alice Johnson", "email": "alice@example.com", "phone": "07123456789", "address": "London"}}
+
+Result: Pass
+
+Test 60: Post To Customer Detail Url
+
+Purpose: Check method restriction at customer detail URL.
+
+Expected result: HTTP 405. JSON error="Method not allowed".
+
+Command: curl.exe --% -i -X POST http://127.0.0.1:3000/api/customers/2001 -H "Content-Type: application/json" -d "{\"fullName\":\"Test Customer\",\"email\":\"test@example.com\",\"phone\":\"07111111111\",\"address\":\"Leeds\"}"
+
+Output message:
+HTTP/1.1 405 Method Not Allowed
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:45:42 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error": "Method not allowed"}
+
+Result: Pass
+
+Test 61: Get Unknown Order Id
+
+Purpose: Check not-found behaviour for orders.
+
+Expected result: HTTP 404. JSON error="Order not found".
+
+Command: curl.exe -i http://127.0.0.1:3000/api/orders/9999
+
+Output message:
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:46:05 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error": "Order not found"}
+
+Result: Pass
+
+Test 62: Put Unknown Order Id
+
+Purpose: Check missing order is not created through PUT.
+
+Expected result: HTTP 404. JSON error="Order not found".
+
+Command: curl.exe --% -i -X PUT http://127.0.0.1:3000/api/orders/9999 -H "Content-Type: application/json" -d "{\"customerId\":2001,\"productId\":1001,\"quantity\":1,\"unitPrice\":15.99,\"status\":\"Pending\"}"
+
+Output message:
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:46:49 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error": "Order not found"}
+
+Result: Pass
+
+Test 63: Delete Unknown Order Id
+
+Purpose: Check missing order deletion is rejected.
+
+Expected result: HTTP 404. JSON error="Order not found".
+
+Command: curl.exe -i -X DELETE http://127.0.0.1:3000/api/orders/9999
+
+Output message:
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:47:11 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Order not found"}
+
+Result: Pass
+
+Test 64: Post Order With Unsupported Status
+
+Purpose: Check Order Service rejects statuses outside allowed values.
+
+Expected result: HTTP 400. JSON error="Order status is not valid".
+
+Command: curl.exe --% -i -X POST http://127.0.0.1:3000/api/orders -H "Content-Type: application/json" -d "{\"customerId\":2001,\"productId\":1001,\"quantity\":1,\"unitPrice\":15.99,\"status\":\"Unknown\"}"
+
+Output message:
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:47:50 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Order status is not valid"}
+
+Result: Pass
+
+Test 65: Post Order With Missing Customer Id
+
+Purpose: Check required customerId field validation.
+
+Expected result: HTTP 400. JSON error="Customer ID must be a positive number".
+
+Command: curl.exe --% -i -X POST http://127.0.0.1:3000/api/orders -H "Content-Type: application/json" -d "{\"productId\":1001,\"quantity\":1,\"unitPrice\":15.99}"
+
+Output message:
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:48:36 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Customer ID must be a positive number"}
+
+Result: Pass
+
+Test 66: Post Order With Decimal Quantity
+
+Purpose: Check quantity must be an integer.
+
+Expected result: HTTP 400. JSON error="Quantity must be at least 1".
+
+Command: curl.exe --% -i -X POST http://127.0.0.1:3000/api/orders -H "Content-Type: application/json" -d "{\"customerId\":2001,\"productId\":1001,\"quantity\":1.5,\"unitPrice\":15.99,\"status\":\"Pending\"}"
+
+Output message:
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:49:26 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"Quantity must be at least 1"}
+
+Result: Pass
+
+Test 67: Verify Orders Unchanged After Rejection
+
+Purpose: Confirm invalid order requests leave original JSON records intact.
+
+Expected result: HTTP 200. JSON data array contains exactly 2 seed orders: 3001
+and 3002.
+
+Command: curl.exe -i http://127.0.0.1:3000/api/orders
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:49:55 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"data": [{"id": 3001, "customerId": 2001, "productId":1001,"quantity":2,"unitPrice":15.99,"totalPrice":31.98,"status":"Pending"},{"id": 3002, "customerId": 2002, "productId": 1002,"quantity":1, "unitPrice":49.99, "totalPrice":49.99, "status":"Processing"}]}
+
+Result: Pass
+
+Test 68: Get Unknown Service Path
+
+Purpose: Check navigation to a non-existent service under /api.
+
+Expected result: HTTP 404. JSON error="Gateway route not found".
+
+Command: curl.exe -i http://127.0.0.1:3000/api/payments
+
+Output message:
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 35
+ETag: W/"23-IuRJyAthxzPtkEqzI2KL4iud7H8"
+Date: Fri, 13 Nov 2026 16:50:21 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error": "Gateway route not found"} -
+
+Result: Pass
+
+Test 69: Get Products With Unused Query String
+
+Purpose: Verify query string does not break gateway route navigation.
+
+Expected result: HTTP 200. JSON data still contains 3 products; sorting is NOT
+implemented by this application.
+
+Command: curl.exe -i http://127.0.0.1:3000/api/products?sort=name
+
+Output message:
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Date: Fri, 13 Nov 2026 16:50:59 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"data":[{"id":1001,"name":"Wireless Mouse", "category": "Electronics", "price":15.99, "stock":50},{"id":1002,"name":"Mechanical Keyboard", "category": "Electronics", "price":49.99, "stock": 20}, {"id":1003, "name": "USB-C Hub", "category":"Accessories", "price": 29.5, "stock":35}]}
+
+Result: Pass
+
+G. SOCKET CLIENT-SERVER TESTING (TCP, NOT cURL)
+
+Socket Test 01: Start Socket Server
+
+Purpose: Check that the TCP socket server starts and listens for connections on port
+4000.
+
+Expected result: Terminal 1 shows: Socket server is running on port 4000.
+
+Command:
+
+cd Socket-Client-Server
+
+node server.js
+
+Note: Open Terminal 1 at the Mini-Ecommerce-System project root. Leave the server
+running.
+
+Output message:
+Socket server is running on port 4000
+
+Result: Pass
+
+Socket Test 02: Connect Socket Client
+
+Purpose: Check that the client connects to the running TCP socket server.
+
+Expected result: Terminal 2 shows: Connected to the server. Terminal 1 shows: A
+client connected.
+
+Command:
+
+cd Socket-Client-Server
+
+node client.js
+
+Note: Open Terminal 2 at the project root. Keep Terminal 1 running.
+
+Output message:
+Connected to the server.
+Server says: Hello client. I received your message.
+
+Result: Pass
+
+Socket Test 03: Send Client Message
+
+Purpose: Check that the server receives the client message.
+
+Expected result: Terminal 1 shows: Client says: Hello server. This is the client.
+
+Command:
+
+node client.js
+
+Note: With server running, run from Terminal 2 inside Socket-Client-Server. The same
+successful run used for Socket Tests 02–04 can provide evidence.
+
+Output message:
+A client connected.
+Client says: Hello server. This is the client.
+
+Result: Pass
+
+Socket Test 04: Receive Server Reply
+
+Purpose: Check that the server sends a response and the client displays it.
+
+Expected result: Terminal 2 shows: Server says: Hello client. I received your message.
+Terminal 1 shows: Client disconnected.
+
+Command: node client.js
+
+Note: With the server running, run from Terminal 2 inside Socket-Client-Server. The
+same successful run used for Socket Tests 02-04 can provide evidence.
+
+Output message:
+Socket server is running on port 4000
+A client connected.
+Client says: Hello server. This is the client.
+Client disconnected.
+
+Result: Pass
+
+Socket Test 05: Server Unavailable
+
+Purpose: Check that the client handles an unavailable TCP socket server.
+
+Expected result: Terminal 2 shows: Connection error: connect ECONNREFUSED
+127.0.0.1:4000.
+
+Command: node client.js
+
+Note: First stop Terminal 1 server with Ctrl+C. Then run the client from Terminal 2
+inside Socket-Client-Server.
+
+Output message:
+Connection error: connect ECONNREFUSED 127.0.0.1:4000
+
+Result: Pass
